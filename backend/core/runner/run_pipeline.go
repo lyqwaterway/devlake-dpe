@@ -18,78 +18,78 @@ limitations under the License.
 package runner
 
 import (
-	gocontext "context"
-	"github.com/apache/incubator-devlake/core/context"
-	"github.com/apache/incubator-devlake/core/dal"
-	"github.com/apache/incubator-devlake/core/errors"
-	"github.com/apache/incubator-devlake/core/models"
-	"time"
+gocontext "context"
+"github.com/apache/incubator-devlake/core/context"
+"github.com/apache/incubator-devlake/core/dal"
+"github.com/apache/incubator-devlake/core/errors"
+"github.com/apache/incubator-devlake/core/models"
+"time"
 )
 
 // RunPipeline FIXME ...
 func RunPipeline(
-	basicRes context.BasicRes,
-	pipelineId uint64,
-	runTasks func([]uint64) errors.Error,
+basicRes context.BasicRes,
+pipelineId uint64,
+runTasks func([]uint64) errors.Error,
 ) errors.Error {
-	// load tasks for pipeline
-	db := basicRes.GetDal()
-	var tasks []models.Task
-	err := db.All(
-		&tasks,
-		dal.Where("pipeline_id = ? AND status in ?", pipelineId, []string{models.TASK_CREATED, models.TASK_RERUN}),
-		dal.Orderby("pipeline_row, pipeline_col"),
-	)
-	if err != nil {
-		return err
-	}
-	taskIds := make([][]uint64, 0)
-	for _, task := range tasks {
-		for len(taskIds) < task.PipelineRow {
-			taskIds = append(taskIds, make([]uint64, 0))
-		}
-		taskIds[task.PipelineRow-1] = append(taskIds[task.PipelineRow-1], task.ID)
-	}
-	return runPipelineTasks(basicRes, pipelineId, taskIds, runTasks)
+// load tasks for pipeline
+db := basicRes.GetDal()
+var tasks []models.Task
+err := db.All(
+&tasks,
+dal.Where("pipeline_id = ? AND status in ?", pipelineId, []string{models.TASK_CREATED, models.TASK_RERUN}),
+dal.Orderby("pipeline_row, pipeline_col"),
+)
+if err != nil {
+return err
+}
+taskIds := make([][]uint64, 0)
+for _, task := range tasks {
+for len(taskIds) < task.PipelineRow {
+taskIds = append(taskIds, make([]uint64, 0))
+}
+taskIds[task.PipelineRow-1] = append(taskIds[task.PipelineRow-1], task.ID)
+}
+return runPipelineTasks(basicRes, pipelineId, taskIds, runTasks)
 }
 
 func runPipelineTasks(
-	basicRes context.BasicRes,
-	pipelineId uint64,
-	taskIds [][]uint64,
-	runTasks func([]uint64) errors.Error,
+basicRes context.BasicRes,
+pipelineId uint64,
+taskIds [][]uint64,
+runTasks func([]uint64) errors.Error,
 ) errors.Error {
-	db := basicRes.GetDal()
-	log := basicRes.GetLogger()
-	// load pipeline from db
-	dbPipeline := &models.Pipeline{}
-	err := db.First(dbPipeline, dal.Where("id = ?", pipelineId))
-	if err != nil {
-		return err
-	}
+db := basicRes.GetDal()
+log := basicRes.GetLogger()
+// load pipeline from db
+dbPipeline := &models.Pipeline{}
+err := db.First(dbPipeline, dal.Where("id = ?", pipelineId))
+if err != nil {
+return err
+}
 
-	// This double for loop executes each set of tasks sequentially while
-	// executing the set of tasks concurrently.
-	for i, row := range taskIds {
-		// update stage
-		err = db.UpdateColumns(dbPipeline, []dal.DalSet{
-			{ColumnName: "status", Value: models.TASK_RUNNING},
-			{ColumnName: "stage", Value: i + 1},
-		})
-		if err != nil {
-			log.Error(err, "update pipeline state failed")
-			break
-		}
-		// run tasks in parallel
-		err = runTasks(row)
-		if err != nil {
-			log.Error(err, "run tasks failed")
-			if errors.Is(err, gocontext.Canceled) || !dbPipeline.SkipOnFail {
-				log.Info("return error")
-				return err
-			}
-		}
-	}
-	log.Info("pipeline finished in %d ms: %v", time.Now().UnixMilli()-dbPipeline.BeganAt.UnixMilli(), err)
-	return err
+// This double for loop executes each set of tasks sequentially while
+// executing the set of tasks concurrently.
+for i, row := range taskIds {
+// update stage
+err = db.UpdateColumns(dbPipeline, []dal.DalSet{
+{ColumnName: "status", Value: models.TASK_RUNNING},
+{ColumnName: "stage", Value: i + 1},
+})
+if err != nil {
+log.Error(err, "update pipeline state failed")
+break
+}
+// run tasks in parallel
+err = runTasks(row)
+if err != nil {
+log.Error(err, "run tasks failed")
+if errors.Is(err, gocontext.Canceled) || !dbPipeline.SkipOnFail {
+log.Info("return error")
+return err
+}
+}
+}
+log.Info("pipeline finished in %d ms: %v", time.Now().UnixMilli()-dbPipeline.BeganAt.UnixMilli(), err)
+return err
 }

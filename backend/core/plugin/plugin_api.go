@@ -18,31 +18,31 @@ limitations under the License.
 package plugin
 
 import (
-	"github.com/apache/incubator-devlake/core/errors"
-	"net/http"
-	"net/url"
+"github.com/apache/incubator-devlake/core/errors"
+"net/http"
+"net/url"
 )
 
 // ApiResourceInput Contains api request information
 type ApiResourceInput struct {
-	Params  map[string]string      // path variables
-	Query   url.Values             // query string
-	Body    map[string]interface{} // json body
-	Request *http.Request
+Params  map[string]string      // path variables
+Query   url.Values             // query string
+Body    map[string]interface{} // json body
+Request *http.Request
 }
 
 // OutputFile is the file returned
 type OutputFile struct {
-	ContentType string
-	Data        []byte
+ContentType string
+Data        []byte
 }
 
 // ApiResourceOutput Describe response data of a api
 type ApiResourceOutput struct {
-	Body        interface{} // response body
-	Status      int
-	File        *OutputFile
-	ContentType string
+Body        interface{} // response body
+Status      int
+File        *OutputFile
+ContentType string
 }
 
 type ApiResourceHandler func(input *ApiResourceInput) (*ApiResourceOutput, errors.Error)
@@ -50,15 +50,16 @@ type ApiResourceHandler func(input *ApiResourceInput) (*ApiResourceOutput, error
 // PluginApi: Implement this interface if plugin offered API
 // Code sample to register a api on `sources/:connectionId`:
 //
-//	func (p Jira) ApiResources() map[string]map[string]plugin.ApiResourceHandler {
-//		return map[string]map[string]plugin.ApiResourceHandler{
-//			"connections/:connectionId": {
-//				"PUT":    api.PutConnection,
-//				"DELETE": api.DeleteConnection,
-//				"GET":    api.GetConnection,
-//			},
-//		}
-//	}
+//func (p Jira) ApiResources() map[string]map[string]plugin.ApiResourceHandler {
+//return map[string]map[string]plugin.ApiResourceHandler{
+//"connections/:connectionId": {
+//"PUT":    api.PutConnection,
+//"DELETE": api.DeleteConnection,
+//"GET":    api.GetConnection,
+//},
+//}
+//}
 type PluginApi interface {
-	ApiResources() map[string]map[string]ApiResourceHandler
+ApiResources() map[string]map[string]ApiResourceHandler
+ArtifactorCollector() ApiResourceHandler // New method to collect artifactor data
 }

@@ -18,56 +18,57 @@ limitations under the License.
 package code
 
 import (
-	"github.com/apache/incubator-devlake/core/models/domainlayer"
-	plugin "github.com/apache/incubator-devlake/core/plugin"
-	"time"
+"github.com/apache/incubator-devlake/core/models/domainlayer"
+plugin "github.com/apache/incubator-devlake/core/plugin"
+"time"
 )
 
 var _ plugin.Scope = (*Repo)(nil)
 
 type Repo struct {
-	domainlayer.DomainEntity
-	Name        string     `json:"name"`
-	Url         string     `json:"url"`
-	Description string     `json:"description"`
-	OwnerId     string     `json:"ownerId" gorm:"type:varchar(255)"`
-	Language    string     `json:"language" gorm:"type:varchar(255)"`
-	ForkedFrom  string     `json:"forkedFrom"`
-	CreatedDate *time.Time `json:"createdDate"`
-	UpdatedDate *time.Time `json:"updatedDate"`
-	Deleted     bool       `json:"deleted"`
+domainlayer.DomainEntity
+Name        string     `json:"name"`
+Url         string     `json:"url"`
+Description string     `json:"description"`
+OwnerId     string     `json:"ownerId" gorm:"type:varchar(255)"`
+Language    string     `json:"language" gorm:"type:varchar(255)"`
+ForkedFrom  string     `json:"forkedFrom"`
+CreatedDate *time.Time `json:"createdDate"`
+UpdatedDate *time.Time `json:"updatedDate"`
+Deleted     bool       `json:"deleted"`
+ArtifactorData string   `json:"artifactorData" gorm:"type:text"`
 }
 
 func (Repo) TableName() string {
-	return "repos"
+return "repos"
 }
 
 type RepoLanguage struct {
-	RepoId   string `json:"repoId" gorm:"index;type:varchar(255)"`
-	Language string `json:"language" gorm:"type:varchar(255)"`
-	Bytes    int
+RepoId   string `json:"repoId" gorm:"index;type:varchar(255)"`
+Language string `json:"language" gorm:"type:varchar(255)"`
+Bytes    int
 }
 
 func (RepoLanguage) TableName() string {
-	return "repo_languages"
+return "repo_languages"
 }
 
 func (r *Repo) ScopeId() string {
-	return r.Id
+return r.Id
 }
 
 func (r *Repo) ScopeName() string {
-	return r.Name
+return r.Name
 }
 
 func NewRepo(id string, name string) *Repo {
-	repo := &Repo{
-		DomainEntity: domainlayer.NewDomainEntity(id),
-	}
+repo := &Repo{
+DomainEntity: domainlayer.NewDomainEntity(id),
+}
 
-	repo.Name = name
-	repo.CreatedDate = &repo.CreatedAt
-	repo.UpdatedDate = &repo.UpdatedAt
+repo.Name = name
+repo.CreatedDate = &repo.CreatedAt
+repo.UpdatedDate = &repo.UpdatedAt
 
-	return repo
+return repo
 }

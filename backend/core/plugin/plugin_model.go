@@ -20,6 +20,6 @@ package plugin
 import "github.com/apache/incubator-devlake/core/dal"
 
 type PluginModel interface {
-	// This method returns all models of the current plugin
-	GetTablesInfo() []dal.Tabler
+// This method returns all models of the current plugin
+GetTablesInfo() []dal.Tabler
 }

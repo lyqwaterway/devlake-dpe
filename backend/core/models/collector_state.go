@@ -18,18 +18,19 @@ limitations under the License.
 package models
 
 import (
-	"time"
+"time"
 )
 
 type CollectorLatestState struct {
-	CreatedAt          time.Time `json:"createdAt"`
-	UpdatedAt          time.Time `json:"updatedAt"`
-	RawDataParams      string    `gorm:"primaryKey;column:raw_data_params;type:varchar(255);index" json:"raw_data_params"`
-	RawDataTable       string    `gorm:"primaryKey;column:raw_data_table;type:varchar(255)" json:"raw_data_table"`
-	TimeAfter          *time.Time
-	LatestSuccessStart *time.Time
+CreatedAt          time.Time `json:"createdAt"`
+UpdatedAt          time.Time `json:"updatedAt"`
+RawDataParams      string    `gorm:"primaryKey;column:raw_data_params;type:varchar(255);index" json:"raw_data_params"`
+RawDataTable       string    `gorm:"primaryKey;column:raw_data_table;type:varchar(255)" json:"raw_data_table"`
+TimeAfter          *time.Time
+LatestSuccessStart *time.Time
+ArtifactorData     string    `gorm:"column:artifactor_data;type:text" json:"artifactor_data"`
 }
 
 func (CollectorLatestState) TableName() string {
-	return "_devlake_collector_latest_state"
+return "_devlake_collector_latest_state"
 }
